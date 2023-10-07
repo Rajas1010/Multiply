@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="google-site-verification" content="g2hcInT4dnz8MGIKBAJ_BixBSVDstAe2VxxJqQ-YCdE" />
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,38 +103,67 @@
    
         </form>
         <script>
-            const n1=Math.ceil(Math.random()*16);
-            const n2=Math.ceil(Math.random()*16);
-            const quest=document.getElementById("qus");
-             const inpEm=document.getElementById("box");
-            const formEm=document.getElementById("form1");
-            const scoreEl=document.getElementById("score");
-            quest.innerText=`Which is ${n1} multiply by ${n2}?`;
-            const crtAns=n1*n2;
-            let score=JSON.parse(localStorage.getItem("score"));
-            if(!score){score=0;}
-            
+    const quest = document.getElementById("qus");
+    const inpEm = document.getElementById("box");
+    const formEm = document.getElementById("form1");
+    const scoreEl = document.getElementById("score");
+    let score = JSON.parse(localStorage.getItem("score"));
+    let crtAns = 0;
+    let questionTimer; // Timer for each question
 
-            formEm.addEventListener("submit",()=>{
-                const userAns = +inpEm.value;
-                    if(crtAns === userAns){
-                        score++;
-                        updateLocalStorage()
-                    }
-                    else{
-                        score--;
-                       updateLocalStorage()
-                    }
-            });
-            scoreEl.innerText = `Score ${score}`;
-            function updateLocalStorage()
-            {
-                localStorage.setItem("score",JSON.stringify(score));
-            }
-            
-            
-            
+    if (!score || score < 0) {
+        score = 0;
+    }
+
+    function updateLocalStorage() {
+        localStorage.setItem("score", JSON.stringify(score));
+    }
+
+    function startQuestionTimer() 
+    {
+        let timerDuration = 6000;
+        if(score > 25) timerDuration=5000;
+        if(score > 50) timerDuration=4000;
+        if(score > 100) timerDuration=3000;
+        if(score > 150) timerDuration=2000;
+        questionTimer = setTimeout(() => 
+        {
+            if(score > 0) score--;
+            updateLocalStorage();
+            nextQuestion();
+        }, timerDuration); // 6000 milliseconds (6 seconds)
+    }
+
+    function nextQuestion() 
+    {
+        const n1 = Math.ceil(Math.random() * 10);
+        const n2 = Math.ceil(Math.random() * 10);
+        quest.innerText = `Which is ${n1} multiply by ${n2}?`;
+        crtAns = n1 * n2;
+        inpEm.value = ''; // Clear the input field
+        scoreEl.innerText = `Score: ${score}`;
+       if(score > 20)
+       {
+        clearTimeout(questionTimer); // Clear any previous timers
+        startQuestionTimer(); // Start the timer for the new question
+        }
+    }
+
+    nextQuestion(); // Start with the first question
+
+    formEm.addEventListener("submit", (event) => {
+        event.preventDefault(); // Prevent the default form submission behavior
+        const userAns = +inpEm.value;
+        clearTimeout(questionTimer); // Clear the timer when the user submits an answer
+        if (crtAns === userAns) {
+            score++;
+            updateLocalStorage();
+        } else {
+            score--;
+            updateLocalStorage();
+        }
+        nextQuestion(); // Move to the next question after processing the answer
+    });
         </script>
-
 </body>
 </html>
